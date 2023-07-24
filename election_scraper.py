@@ -1,44 +1,74 @@
 import requests
 from bs4 import BeautifulSoup
+from urllib.parse import urljoin
 import csv
-import sys
 
-if len(sys.argv) != 3:
-    print('Chyba: Tento skript vyžaduje 2 argumenty: odkaz na územní celek a jméno výstupního souboru')
-    sys.exit(1)
+url = "https://volby.cz/pls/ps2017nss/ps3?xjazyk=CZ"
+href = "ps32?xjazyk=CZ&xkraj=2&xnumnuts=2102"
 
-url = sys.argv[1]
-output_file = sys.argv[2]
+abs_url = urljoin(url, href)
 
-page = requests.get(url)
-soup = BeautifulSoup(page.content, 'html.parser')
+response1 = requests.get(abs_url)
+soup1 = BeautifulSoup(response1.content, "html.parser")
 
-table = soup.find('table', {'id': 'ps311_t1'})
-rows = table.find_all('tr')
+# Zpracování první tabulky
+vysledky = []
+html = []
+tables = soup1.find_all('table', {"class": "table"})
+for table in tables:
+    rows = table.find_all("tr")
+    for row in rows:
+        cells = row.find_all("td")
+        if len(cells) >= 2:
+            vysledky.append([cells[0].text, cells[1].text])
+        if len(cells) >= 1:
+            link = cells[0].find("a")
+            if link:
+                href = link.get("href")
+                if href:
+                    abs_href = urljoin(abs_url, href)
+                    html.append(abs_href)
 
-header = ['Kód obce', 'Název obce', 'Voliči v seznamu', 'Vydáné obálky', 'Platné hlasy']
-parties = []
+data = []
+for i in html:
+    response = requests.get(i)
+    soup = BeautifulSoup(response.content, "html.parser")
+    # Získání první tabulky
+    table = soup.find('table', {"class": "table"})
+    if table:
+        rows = table.find_all("tr")
+        # Získání třetího řádku (index 2)
+        if len(rows) >= 3:
+            cells = rows[2].find_all("td")
+            if len(cells) >= 8:
+                data.append([cells[3].text, cells[4].text, cells[6].text, cells[7].text])
 
-for row in rows:
-    cells = row.find_all('td')
-    if len(cells) > 1:
-        if not parties:
-            party_cells = row.find_all('td', {'class': 'cislo'})
-            for cell in party_cells:
-                party_name = cell['headers'][0]
-                parties.append(party_name)
-                header.append(party_name)
-        area_code = cells[0].text
-        area_name = cells[1].text
-        voters = cells[2].text
-        envelopes = cells[3].text
-        valid_votes = cells[4].text
-        party_votes = [cell.text for cell in cells[5:]]
-        row_data = [area_code, area_name, voters, envelopes, valid_votes] + party_votes
+# Zpracování druhé tabulky a získání hlaviček sloupců
+data2 = []
+for i in html:
+    response = requests.get(i)
+    soup = BeautifulSoup(response.content, "html.parser")
+    tables = soup.find_all('table', {"class": "table"})
+    for table in tables:
+        rows = table.find_all("tr")
+        for row in rows:
+            cells = row.find_all("td")
+            if len(cells) >= 3:
+                header = cells[1].text
+                value = cells[2].text
+                data2.append([header, value])
 
-with open(output_file, 'w') as f:
-    writer = csv.writer(f)
-    writer.writerow(header)
-    writer.writerow(row_data)
+# Uložení dat do souboru CSV
+with open("vysledky.csv", mode="w", encoding="utf-8", newline="") as file:
+    writer = csv.writer(file)
+    headers = ["Kod", "Obec", "Voliči v seznamu", "Platné hlasy", "Odevzdané obálky", "Vydané obálky"]
+    writer.writerow(headers)
 
-print(f'Výsledky hlasování byly uloženy do souboru {output_file}')
+    for vysledek, radky in zip(vysledky, data):
+        row_data = vysledek + radky
+        writer.writerow(row_data)
+
+    for row in data2:
+        writer.writerow(["", row[0], "", "", "", ""] + [row[1]])
+
+print("Data byla zapsána do vysledky.csv")
