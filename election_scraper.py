@@ -4,13 +4,13 @@ from urllib.parse import urljoin
 import csv
 import argparse
 
-parser = argparse.ArgumentParser(description='Zpracování výsledků hlasování.')
-parser.add_argument('url', type=str, help='Odkaz na územní celek')
-parser.add_argument('output_file', type=str, help='Jméno výstupního souboru')
-args = parser.parse_args()
+par_ser = argparse.ArgumentParser(description='Zpracování výsledků hlasování.')
+par_ser.add_argument('url', type=str, help='Odkaz na územní celek')
+par_ser.add_argument('output_file', type=str, help='Jméno výstupního souboru')
+args_par = par_ser.parse_args()
 
-url = args.url
-output_file = args.output_file
+url = args_par.url
+output_file = args_par.output_file
 
 href = "ps32?xjazyk=CZ&xkraj=2&xnumnuts=2102"
 abs_url = urljoin(url, href)
