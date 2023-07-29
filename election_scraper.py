@@ -2,6 +2,15 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 import csv
+import argparse
+
+parser = argparse.ArgumentParser(description='Zpracování výsledků hlasování.')
+parser.add_argument('url', type=str, help='Odkaz na územní celek')
+parser.add_argument('output_file', type=str, help='Jméno výstupního souboru')
+args = parser.parse_args()
+
+url = sys.argv[1]
+output_file = sys.argv[2]
 
 url = "https://volby.cz/pls/ps2017nss/ps3?xjazyk=CZ"
 href = "ps32?xjazyk=CZ&xkraj=2&xnumnuts=2102"
