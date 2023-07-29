@@ -9,12 +9,10 @@ parser.add_argument('url', type=str, help='Odkaz na územní celek')
 parser.add_argument('output_file', type=str, help='Jméno výstupního souboru')
 args = parser.parse_args()
 
-url = sys.argv[1]
-output_file = sys.argv[2]
+url = args.url
+output_file = args.output_file
 
-url = "https://volby.cz/pls/ps2017nss/ps3?xjazyk=CZ"
 href = "ps32?xjazyk=CZ&xkraj=2&xnumnuts=2102"
-
 abs_url = urljoin(url, href)
 
 response1 = requests.get(abs_url)
