@@ -35,7 +35,7 @@ první argument: "https://volby.cz/pls/ps2017nss/ps3?xjazyk=CZ"
 druhý argument: vysledky.csv
 
 spouštění programu:
- python election_sraper.py "https://volby.cz/pls/ps2017nss/ps3?xjazyk=CZ" vysledky.csv
+ python election_scraper.py "https://volby.cz/pls/ps2017nss/ps3?xjazyk=CZ" vysledky.csv
 
  Informace o konci stahování:
  ------------------------------
